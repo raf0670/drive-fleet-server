@@ -33,6 +33,11 @@ async function run() {
             res.json(cars);
         });
 
+        app.get("/cars/featured", async (req, res) => {
+            const featuredCars = await carCollection.find().limit(6).toArray();
+            res.json(featuredCars);
+        });
+
         app.get("/cars/:carID", async (req, res) => {
             const { carID } = req.params;
             const car = await carCollection.findOne({
