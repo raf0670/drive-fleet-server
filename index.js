@@ -24,7 +24,22 @@ async function run() {
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
 
-        
+        const db = client.db("DriveFleetDB");
+        const carCollection = db.collection("CarCollection");
+
+        app.get("/cars", async (req, res) => {
+            const cursor = carCollection.find({});
+            const cars = await cursor.toArray();
+            res.json(cars);
+        });
+
+        app.get("/cars/:carID", async (req, res) => {
+            const { carID } = req.params;
+            const car = await carCollection.findOne({
+                _id: new ObjectId(carID)
+            });
+            res.json(car);
+        });
 
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
