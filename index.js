@@ -48,6 +48,12 @@ async function run() {
             res.json(car);
         });
 
+        app.post("/cars", async (req, res) => {
+            const car = req.body;
+            const result = await carCollection.insertOne(car);
+            res.json(result);
+        });
+
         app.post("/bookings", async (req, res) => {
             const bookingData = req.body;
             const result = await bookingCollection.insertOne(bookingData);
