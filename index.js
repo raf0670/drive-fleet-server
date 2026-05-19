@@ -56,7 +56,18 @@ async function run() {
 
         app.delete("/cars/:carID", async (req, res) => {
             const { carID } = req.params;
-            const result = await carCollection.deleteOne({_id: new ObjectId(carID)});
+            const result = await carCollection.deleteOne({ _id: new ObjectId(carID) });
+            res.json(result);
+        });
+
+        app.patch("/cars/:carID", async (req, res) => {
+            const { carID } = req.params;
+            const updatedData = await req.body;
+            const query = { _id: new ObjectId(carID) };
+            const result = carCollection.updateOne(
+                query,
+                { $set: updatedData }
+            );
             res.json(result);
         });
 
