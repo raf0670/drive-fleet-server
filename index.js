@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 const port = process.env.PORT || 5000;
 
 const uri = process.env.MONGO_URI;
@@ -26,6 +27,7 @@ async function run() {
 
         const db = client.db("DriveFleetDB");
         const carCollection = db.collection("CarCollection");
+        const bookingCollection = db.collection("Bookings");
 
         app.get("/cars", async (req, res) => {
             const cursor = carCollection.find({});
@@ -34,7 +36,7 @@ async function run() {
         });
 
         app.get("/cars/featured", async (req, res) => {
-            const featuredCars = await carCollection.find().limit(6).toArray();
+            const featuredCars = await carCollection.find().limit(3).toArray();
             res.json(featuredCars);
         });
 
@@ -46,6 +48,11 @@ async function run() {
             res.json(car);
         });
 
+        app.post("/bookings", async (req, res) => {
+            const bookingData = req.body;
+            const result = await bookingCollection.insertOne(bookingData);
+            res.json(result);
+        });
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
