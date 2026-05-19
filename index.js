@@ -71,6 +71,17 @@ async function run() {
             res.json(result);
         });
 
+        // Express Route Handler (Backend)
+        app.patch("/cars/:carID/increment-booking", async (req, res) => {
+            const { carID } = req.params;
+
+            const result = await carCollection.updateOne(
+                { _id: new ObjectId(carID) },
+                { $inc: { bookingCount: 1 } }
+            );
+            res.json(result);
+        });
+
         app.post("/bookings", async (req, res) => {
             const bookingData = req.body;
             const result = await bookingCollection.insertOne(bookingData);
