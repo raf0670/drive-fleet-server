@@ -54,6 +54,12 @@ async function run() {
             res.json(result);
         });
 
+        app.delete("/cars/:carID", async (req, res) => {
+            const { carID } = req.params;
+            const result = await carCollection.deleteOne({_id: new ObjectId(carID)});
+            res.json(result);
+        });
+
         app.post("/bookings", async (req, res) => {
             const bookingData = req.body;
             const result = await bookingCollection.insertOne(bookingData);
