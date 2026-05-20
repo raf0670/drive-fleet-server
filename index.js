@@ -53,7 +53,24 @@ async function run() {
         const bookingCollection = db.collection("Bookings");
 
         app.get("/cars", async (req, res) => {
-            const cursor = carCollection.find({});
+            const { search, type } = req.query;
+            let query = {};
+
+            if (search) {
+                query.carName = {
+                    $regex: search,
+                    $options: "i"
+                };
+            }
+
+            if (type) {
+                const typeAraay = type.split(",");
+                query.carType = {
+                    $in: typeAraay
+                }
+            }
+            console.log(query);
+            const cursor = carCollection.find(query);
             const cars = await cursor.toArray();
             res.json(cars);
         });
@@ -85,9 +102,9 @@ async function run() {
 
         app.patch("/cars/:carID", verifyToken, async (req, res) => {
             const { carID } = req.params;
-            const updatedData = await req.body;
+            const updatedData = req.body;
             const query = { _id: new ObjectId(carID) };
-            const result = carCollection.updateOne(
+            const result = await carCollection.updateOne(
                 query,
                 { $set: updatedData }
             );
