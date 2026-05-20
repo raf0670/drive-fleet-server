@@ -2,6 +2,7 @@ const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,28 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
+
+const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
+
+const verifyToken = async (req, res, next) => {
+    const authHeader = req?.headers.authorization;
+    // console.log(authHeader);
+    if (!authHeader) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+        const { payload } = await jwtVerify(token, JWKS);
+        // console.log(token);
+        next();
+    } catch (error) {
+        return res.status(403).json({ message: "Forbidden" });
+    }
+};
 
 async function run() {
     try {
@@ -40,7 +63,7 @@ async function run() {
             res.json(featuredCars);
         });
 
-        app.get("/cars/:carID", async (req, res) => {
+        app.get("/cars/:carID", verifyToken, async (req, res) => {
             const { carID } = req.params;
             const car = await carCollection.findOne({
                 _id: new ObjectId(carID)
@@ -48,19 +71,19 @@ async function run() {
             res.json(car);
         });
 
-        app.post("/cars", async (req, res) => {
+        app.post("/cars", verifyToken, async (req, res) => {
             const car = req.body;
             const result = await carCollection.insertOne(car);
             res.json(result);
         });
 
-        app.delete("/cars/:carID", async (req, res) => {
+        app.delete("/cars/:carID", verifyToken, async (req, res) => {
             const { carID } = req.params;
             const result = await carCollection.deleteOne({ _id: new ObjectId(carID) });
             res.json(result);
         });
 
-        app.patch("/cars/:carID", async (req, res) => {
+        app.patch("/cars/:carID", verifyToken, async (req, res) => {
             const { carID } = req.params;
             const updatedData = await req.body;
             const query = { _id: new ObjectId(carID) };
@@ -88,13 +111,13 @@ async function run() {
             res.json(result);
         });
 
-        app.get("/bookings/:userID", async (req, res) => {
+        app.get("/bookings/:userID", verifyToken, async (req, res) => {
             const { userID } = req.params;
             const result = await bookingCollection.find({ userID: userID }).toArray()
             res.json(result);
         });
 
-        app.delete("/bookings/:bookingID", async (req, res) => {
+        app.delete("/bookings/:bookingID", verifyToken, async (req, res) => {
             const { bookingID } = req.params;
             const result = await bookingCollection.deleteOne({
                 _id: new ObjectId(bookingID)
