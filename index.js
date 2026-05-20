@@ -23,7 +23,6 @@ const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks
 
 const verifyToken = async (req, res, next) => {
     const authHeader = req?.headers.authorization;
-    // console.log(authHeader);
     if (!authHeader) {
         return res.status(401).json({ message: "Unauthorized" });
     }
@@ -34,7 +33,6 @@ const verifyToken = async (req, res, next) => {
 
     try {
         const { payload } = await jwtVerify(token, JWKS);
-        // console.log(token);
         next();
     } catch (error) {
         return res.status(403).json({ message: "Forbidden" });
@@ -69,7 +67,6 @@ async function run() {
                     $in: typeAraay
                 }
             }
-            console.log(query);
             const cursor = carCollection.find(query);
             const cars = await cursor.toArray();
             res.json(cars);
